@@ -145,11 +145,19 @@ class IMP implements MouseListener{
 		    edgeDetect();
 		}
 	    });
+	JMenuItem equalize = new JMenuItem("Equalize");
+	equalize.addActionListener(new ActionListener(){
+		@Override
+		public void actionPerformed(ActionEvent evt){
+		    equalize();
+		}
+	    });
 	fun.add(firstItem);
 	fun.add(secondItem);
 	fun.add(thirdItem);
 	fun.add(histograms);
 	fun.add(fourthItem);
+	fun.add(equalize);
 	return fun;
     }
 
@@ -361,7 +369,50 @@ class IMP implements MouseListener{
 	resetPicture();
     }
 
-		
+    public void equalize(){
+	int[] redValues = new int[256];
+	int[] greenValues = new int[256];
+	int[] blueValues = new int[256];
+	int[] rgbA = new int[4];
+	
+	for(int i=0; i<width; i++){
+	    for(int j=0; j<height; j++){
+		rgbA = getPixelArray(picture[j][i]);
+		redValues[rgbA[1]]++;
+		greenValues[rgbA[2]]++;
+		blueValues[rgbA[3]]++;
+	    }
+	}
+
+	
+	for(int i=0; i<255; i++){
+	    if(i>0){
+		redValues[i] = redValues[i]+redValues[i-1];
+		greenValues[i] = greenValues[i]+greenValues[i-1];
+		blueValues[i] = blueValues[i]+blueValues[i-1];
+	    }
+	}
+	
+	for(int i=0; i<height; i++){
+	    for(int j=0; j<width; j++){
+		rgbA = getPixelArray(picture[i][j]);
+		if(rgbA[1]>0)
+		    rgbA[1] = (int)(255.0*(double)(redValues[rgbA[1]]-redValues[rgbA[1]-1])/(double)redValues[rgbA[1]]);
+		else
+		    rgbA[1] = 0;
+		if(rgbA[2]>0)
+		    rgbA[2] = (int)(255.0*(double)(greenValues[rgbA[2]]-greenValues[rgbA[2]-1])/(double)greenValues[rgbA[2]]);
+		else
+		    rgbA[2] = 0;
+		if(rgbA[3]>0)
+		    rgbA[3] = (int)(255.0*(double)(blueValues[rgbA[3]]-blueValues[rgbA[3]-1])/(double)blueValues[rgbA[3]]);
+		else
+		    rgbA[3]=0;
+		picture[i][j] = getPixels(rgbA);
+	    }
+	}
+	resetPicture();
+    }
 
     public void makeHistograms(){
 	if(redH != null){
