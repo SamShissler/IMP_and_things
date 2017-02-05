@@ -41,6 +41,9 @@ class IMP implements MouseListener{
     //your 2D array of pixels
     int picture[][];
 
+    int EDM = 2;
+    int thresh = 127;
+
     /*
      * In the Constructor I set up the GUI, the frame the menus. The open pulldown
      * menu is how you will open an image to manipulate.
@@ -87,7 +90,7 @@ class IMP implements MouseListener{
 	start.addActionListener(new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent evt){
-		    fun2();
+		    
 		}
 	    });
 	butPanel.add(start);
@@ -103,11 +106,11 @@ class IMP implements MouseListener{
 
     private JMenu getFunctions(){
 	JMenu fun = new JMenu("Functions");
-	JMenuItem firstItem = new JMenuItem("MyExample - fun1 method");
+	JMenuItem firstItem = new JMenuItem("Rotate 90 right");
 	firstItem.addActionListener(new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent evt){
-		    fun1();
+		    turn90right();
 		}
 	    });
 	JMenuItem secondItem = new JMenuItem("Rotate 90 left");
@@ -124,9 +127,17 @@ class IMP implements MouseListener{
 		    greyScale();
 		}
 	    });
+	JMenuItem fourthItem = new JMenuItem("Edge Detection");
+	fourthItem.addActionListener(new ActionListener(){
+		@Override
+		public void actionPerformed(ActionEvent evt){
+		    edgeDetect();
+		}
+	    });
 	fun.add(firstItem);
 	fun.add(secondItem);
 	fun.add(thirdItem);
+	fun.add(fourthItem);
 	return fun;
     }
 
@@ -184,14 +195,22 @@ class IMP implements MouseListener{
      *  This method takes the picture back to the original picture
      */
     private void reset(){
-        for(int i = 0; i<width*height; i++)
-	    pixels[i] = results[i];
-	Image img2 = toolkit.createImage(new MemoryImageSource(width, height, pixels, 0, width));
+	Image image = img.getImage();
+	JLabel label = new JLabel(img);
+	label.addMouseListener(this);
 
-	JLabel label2 = new JLabel(new ImageIcon(img2));
+	PixelGrabber pg = new PixelGrabber(image, 0, 0, width, height, pixels, 0, width );
+	try{
+	    pg.grabPixels();
+	}catch(InterruptedException e){
+	    System.err.println("Interrupted waiting for pixels");
+	    return;
+	}
+	for(int i = 0; i<width*height; i++)
+	    results[i] = pixels[i];
+	turnTwoDimensional();
 	mp.removeAll();
-	mp.add(label2);
-
+	mp.add(label);
 	mp.revalidate();
     }
     /*
@@ -243,44 +262,7 @@ class IMP implements MouseListener{
      * used. As long as you have a picture open first the when your fun1, fun2, fun....etc method is called you will
      * have a 2D array called picture that is holding each pixel from your picture.
      *************************************************************************************************/
-    /*
-     * Example function that just removes all red values from the picture.
-     * Each pixel value in picture[i][j] holds an integer value. You need to send that pixel to getPixelArray the method which will return a 4 element array
-     * that holds A,R,G,B values. Ignore [0], that's the Alpha channel which is transparency, we won't be using that, but you can on your own.
-     * getPixelArray will breaks down your single int to 4 ints so you can manipulate the values for each level of R, G, B.
-     * After you make changes and do your calculations to your pixel values the getPixels method will put the 4 values in your ARGB array back into a single
-     * integer value so you can give it back to the program and display the new picture.
-     */
-    private void fun1(){
-	for(int i=0; i<height; i++){
-	    for(int j=0; j<width; j++){
-		int rgbArray[] = new int[4];
-		//get three ints for R, G and B
-		rgbArray = getPixelArray(picture[i][j]);
-		int rgbOriginal[] = rgbArray;
-		rgbArray[1] = rgbOriginal[3];
-		rgbArray[2] = rgbOriginal[1];
-		rgbArray[3] = rgbOriginal[2];
-		//take three ints for R, G, B and put them back into a single int
-		picture[i][j] = getPixels(rgbArray);
 
-	    }
-	}
-	resetPicture();
-    }
-
-    /*
-     * fun2
-     * This is where you will write your STACK
-     * All the pixels are in picture[][]
-     * Look at above fun1() to see how to get the RGB out of the int (getPixelArray)
-     * and then put the RGB back to an int (getPixels)
-     */
-
-    private void fun2(){
-	
-    }
-    
     private void turn90left(){
 	System.out.println("The height is: "+height);
 	System.out.println("The width is: "+width);
@@ -299,8 +281,50 @@ class IMP implements MouseListener{
 	resetPicture();
     }
 
+    private void edgeDetect(){
+	greyScale();
+	int avg = 0, temp = 0;
+	int rgbArray[] = new int[4];
+	for(int i=0; i<height; i++){
+	    for(int j=0; j<width; j++){
+		rgbArray = getPixelArray(picture[i][j]);
+		avg = getSurroundingAvg(i,j);
+		temp = Math.abs(rgbArray[1]-avg);
+		if(temp > thresh)
+		    temp = 255;
+		else
+		    temp = 0;
+		rgbArray[1] = temp;
+		rgbArray[2] = temp;
+		rgbArray[3] = temp;
+		picture[i][j] = getPixels(rgbArray);
+	    }
+	}
+	resetPicture();
+    }
+
+    private int getSurroundingAvg(int si, int sj){
+	int totSurr = 0;
+	int counter = 0;
+	int rgbArray[] = new int[4];
+	for(int i = -EDM; i<=EDM; i++){
+	    for(int j=-EDM; j<=EDM; j++){
+		if(!(i==0 && j==0) && (si+i > 0 && si+i < height && sj+j > 0 && sj+j < width)){
+		    rgbArray = getPixelArray(picture[si+i][sj+j]);
+		    totSurr += rgbArray[1];
+		    counter++;
+		}
+	    }
+	}
+     	//System.out.println("Counter: "+counter);
+	return totSurr/counter;
+
+    }
+    
     private void turn90right(){
-	int newArray[][] = new int[width][height];
+	turn90left();
+	turn90left();
+	turn90left();
     }
 
     private void quit(){
