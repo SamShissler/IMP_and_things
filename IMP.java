@@ -9,7 +9,7 @@
   3. Show a histogram of the colors in a separate window
       1. Use the CDF to normalize the distribution evenly
       2. https://en.wikipedia.org/wiki/Histogram_equalization
-  4. Turn a color image into a grayscale and display it.
+  4. Turn a color image into a grayscale and display it. 0.21 R + 0.72 G + 0.07 B
   5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
   6. Track a colored object.....orange is easiest. Results is a binary image that is black except where the colored object is located.
  */
@@ -110,16 +110,23 @@ class IMP implements MouseListener{
 		    fun1();
 		}
 	});
-	JMenuItem secondItem = new JMenuItem("Rotate 90 right");
+	JMenuItem secondItem = new JMenuItem("Rotate 90 left");
 	secondItem.addActionListener(new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent evt){
-		   turn90right();
+		   turn90left();
 		}
 	});
-	//fun.add(firstItem);
+	JMenuItem thirdItem = new JMenuItem("Grey Scale");
+	thirdItem.addActionListener(new ActionListener(){
+		@Override
+		public void actionPerformed(ActionEvent evt){
+		   greyScale();
+		}
+	});
 	fun.add(firstItem);
 	fun.add(secondItem);
+	fun.add(thirdItem);
 	return fun;
     }
 
@@ -273,10 +280,13 @@ class IMP implements MouseListener{
 	
     }
     
-    private void turn90right(){
+    private void turn90left(){
+	System.out.println("The height is: "+height);
+	System.out.println("The width is: "+width);
 	int newArray[][] = new int[width][height];
 	for( int i=0; i<height; i++){
-	    for( int j=0; j<width; j++){
+	    // System.out.println("This is i: " + i);
+	    for( int j=1; j<width; j++){
 		newArray[width-j][i] = picture[i][j];
 	    }
 	}
@@ -284,14 +294,32 @@ class IMP implements MouseListener{
 	resetPicture();
     }
 
-    private void turn90left(){
-	int newArray[][] = new int[height][width];
+    private void turn90right(){
+	int newArray[][] = new int[width][height];
     }
 
     private void quit(){
 	System.exit(0);
     }
 
+    private void greyScale(){
+	for(int i=0; i<height; i++){
+	    for(int j=0; j<width; j++){
+		int rgbArray[] = new int[4];
+		//get three ints for R, G and B
+		rgbArray = getPixelArray(picture[i][j]);
+		int rgbOriginal[] = rgbArray;
+		int temp = Math.round((float)((.21 * rgbArray[1]) + (.72 * rgbArray[2]) + (.07 * rgbArray[3])));
+		rgbArray[1] = temp;
+		rgbArray[2] = temp;
+		rgbArray[3] = temp;
+		//take three ints for R, G, B and put them back into a single int
+		picture[i][j] = getPixels(rgbArray);	
+	    }
+	}
+	resetPicture();
+    }
+    
     @Override
     public void mouseEntered(MouseEvent m){}
     @Override
