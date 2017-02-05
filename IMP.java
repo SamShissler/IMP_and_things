@@ -374,7 +374,8 @@ class IMP implements MouseListener{
 	int[] greenValues = new int[256];
 	int[] blueValues = new int[256];
 	int[] rgbA = new int[4];
-	
+
+	//This works correctly
 	for(int i=0; i<width; i++){
 	    for(int j=0; j<height; j++){
 		rgbA = getPixelArray(picture[j][i]);
@@ -384,7 +385,7 @@ class IMP implements MouseListener{
 	    }
 	}
 
-	
+	//This works correctly
 	for(int i=0; i<255; i++){
 	    if(i>0){
 		redValues[i] = redValues[i]+redValues[i-1];
@@ -392,20 +393,20 @@ class IMP implements MouseListener{
 		blueValues[i] = blueValues[i]+blueValues[i-1];
 	    }
 	}
-	
+
 	for(int i=0; i<height; i++){
 	    for(int j=0; j<width; j++){
 		rgbA = getPixelArray(picture[i][j]);
 		if(rgbA[1]>0)
-		    rgbA[1] = (int)(255.0*(double)(redValues[rgbA[1]]-redValues[rgbA[1]-1])/(double)redValues[rgbA[1]]);
+		    rgbA[1] = (int)(255.0*(double)redValues[rgbA[1]]/(double)redValues[254]);
 		else
 		    rgbA[1] = 0;
 		if(rgbA[2]>0)
-		    rgbA[2] = (int)(255.0*(double)(greenValues[rgbA[2]]-greenValues[rgbA[2]-1])/(double)greenValues[rgbA[2]]);
+		    rgbA[2] = (int)(255.0*(double)greenValues[rgbA[2]]/(double)greenValues[254]);
 		else
 		    rgbA[2] = 0;
 		if(rgbA[3]>0)
-		    rgbA[3] = (int)(255.0*(double)(blueValues[rgbA[3]]-blueValues[rgbA[3]-1])/(double)blueValues[rgbA[3]]);
+		    rgbA[3] = (int)(255.0*(double)blueValues[rgbA[3]]/(double)blueValues[254]);
 		else
 		    rgbA[3]=0;
 		picture[i][j] = getPixels(rgbA);
