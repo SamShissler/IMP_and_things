@@ -135,6 +135,9 @@ class IMP implements MouseListener{
 		@Override
 		public void actionPerformed(ActionEvent evt){
 		    makeHistograms();
+		}
+	    });
+	    
 	JMenuItem fourthItem = new JMenuItem("Edge Detection");
 	fourthItem.addActionListener(new ActionListener(){
 		@Override
@@ -257,7 +260,7 @@ class IMP implements MouseListener{
     private int getPixels(int rgb[]){
 	int alpha = 0;
 	int rgba = (rgb[0] << 24) | (rgb[1] <<16) | (rgb[2] << 8) | rgb[3];
-        return rgba;
+	return rgba;
     }
 
     public void getValue(int x, int y){
@@ -325,7 +328,7 @@ class IMP implements MouseListener{
 		}
 	    }
 	}
-     	//System.out.println("Counter: "+counter);
+	//System.out.println("Counter: "+counter);
 	return totSurr/counter;
 
     }
@@ -357,6 +360,8 @@ class IMP implements MouseListener{
 	}
 	resetPicture();
     }
+
+		
 
     public void makeHistograms(){
 	if(redH != null){
@@ -406,11 +411,11 @@ class IMP implements MouseListener{
     public void mouseExited(MouseEvent m){}
     @Override
     public void mouseClicked(MouseEvent m){
-        colorX = m.getX();
-        colorY = m.getY();
-        System.out.println(colorX + "  " + colorY);
-        getValue(colorX, colorY);
-        start.setEnabled(true);
+	colorX = m.getX();
+	colorY = m.getY();
+	System.out.println(colorX + "  " + colorY);
+	getValue(colorX, colorY);
+	start.setEnabled(true);
     }
     @Override
     public void mousePressed(MouseEvent m){}
