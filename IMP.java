@@ -41,6 +41,9 @@ class IMP implements MouseListener{
     //your 2D array of pixels
     int picture[][];
 
+    Histogram redH, blueH, greenH;
+    int maxValue;
+
     /*
      * In the Constructor I set up the GUI, the frame the menus. The open pulldown
      * menu is how you will open an image to manipulate.
@@ -124,9 +127,17 @@ class IMP implements MouseListener{
 		    greyScale();
 		}
 	    });
+	JMenuItem histograms = new JMenuItem("Histograms");
+	histograms.addActionListener(new ActionListener(){
+		@Override
+		public void actionPerformed(ActionEvent evt){
+		    makeHistograms();
+		}
+	    });
 	fun.add(firstItem);
 	fun.add(secondItem);
 	fun.add(thirdItem);
+	fun.add(histograms);
 	return fun;
     }
 
@@ -324,6 +335,48 @@ class IMP implements MouseListener{
 	}
 	resetPicture();
     }
+
+    public void makeHistograms(){
+	if(redH != null){
+	    redH.dispatchEvent(new WindowEvent(redH, WindowEvent.WINDOW_CLOSING));
+	    blueH.dispatchEvent(new WindowEvent(blueH, WindowEvent.WINDOW_CLOSING));
+	    greenH.dispatchEvent(new WindowEvent(greenH, WindowEvent.WINDOW_CLOSING));
+	}
+	int[] redValues = new int[256];
+	int[] greenValues = new int[256];
+	int[] blueValues = new int[256];
+
+	int[] rgbA = {0, 0, 0, 0};
+	maxValue = Integer.MIN_VALUE;
+
+	for(int i=0; i<width; i++){
+	    for(int j=0; j<height; j++){
+		rgbA = getPixelArray(picture[j][i]);
+		redValues[rgbA[1]]++;
+		greenValues[rgbA[2]]++;
+		blueValues[rgbA[3]]++;
+	    }
+	}
+
+	
+	for(int i=0; i<255; i++){
+	    if(redValues[i]>maxValue){
+		maxValue = redValues[i];
+	    }
+	    if(greenValues[i]>maxValue){
+		maxValue = greenValues[i];
+	    }
+	    if(blueValues[i]>maxValue){
+		maxValue = blueValues[i];
+	    }
+	}
+
+
+	
+	redH = new Histogram("RED", redValues);
+	greenH = new Histogram("GREEN", greenValues);
+	blueH = new Histogram("BLUE", blueValues);
+    }
     
     @Override
     public void mouseEntered(MouseEvent m){}
@@ -340,9 +393,48 @@ class IMP implements MouseListener{
     @Override
     public void mousePressed(MouseEvent m){}
     @Override
-    public void mouseReleased(MouseEvent m){}
+    public void mouseReleased(MouseEvent m){
+	Histogram h = new Histogram("CLICK", pixels);
+    }
 
     public static void main(String [] args){
 	IMP imp = new IMP();
+    }
+
+    public class Histogram extends JFrame{
+	int[] values;
+	public Histogram(String name, int[] values){
+	    this.values = values.clone();
+	    this.setTitle(name);
+	    this.setVisible(true);
+	    this.setSize(276, 500);
+	    if(name.equals("RED"))
+		this.setLocation(600, 0);
+	    else if(name.equals("GREEN"))
+		this.setLocation(876, 0);
+	    else
+		this.setLocation(876+276, 0);
+	    this.repaint();
+	    HPanel drawP = new HPanel();
+	    this.add(drawP);
+	    System.out.println(maxValue);
+
+	}
+	public class HPanel extends JPanel{
+
+	    public HPanel(){
+		repaint();
+	    }
+
+	    @Override
+	    public void paintComponent(Graphics g){
+		super.paintComponent(g);
+
+		for(int i=0; i<values.length; i++){
+		    //System.out.println(values[i]/maxValue);
+		    g.drawLine(10+i, 450, 10+i, 450-(400*values[i]/maxValue));
+		}
+	    }
+	}
     }
 }
