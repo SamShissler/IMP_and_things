@@ -4,15 +4,15 @@
  */
 
 /*
-  1. Fix the reset function in the pulldown menu
-  2. Rotate image 90 degrees, odd shaped images should work
-  3. Show a histogram of the colors in a separate window
-      1. Use the CDF to normalize the distribution evenly
-      2. https://en.wikipedia.org/wiki/Histogram_equalization
-  4. Turn a color image into a grayscale and display it. 0.21 R + 0.72 G + 0.07 B
-  5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
-  6. Track a colored object.....orange is easiest. Results is a binary image that is black except where the colored object is located.
- */
+  |x|1. Fix the reset function in the pulldown menu
+  |x| 2. Rotate image 90 degrees, odd shaped images should work
+  |_| 3. Show a histogram of the colors in a separate window
+  |_|       3.5. Use the CDF to normalize the distribution evenly
+  |_|       (note) https://en.wikipedia.org/wiki/Histogram_equalization
+  |x| 4. Turn a color image into a grayscale and display it. 0.21 R + 0.72 G + 0.07 B
+  |_| 5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
+  |_| 6. Track a colored object.....orange is easiest. Results is a binary image that is black except where the colored object is located.
+*/
 
 import javax.swing.*;
 import java.awt.*;
@@ -89,7 +89,7 @@ class IMP implements MouseListener{
 		public void actionPerformed(ActionEvent evt){
 		    fun2();
 		}
-        });
+	    });
 	butPanel.add(start);
 	frame.getContentPane().add(butPanel, BorderLayout.SOUTH);
 	frame.setJMenuBar(bar);
@@ -109,21 +109,21 @@ class IMP implements MouseListener{
 		public void actionPerformed(ActionEvent evt){
 		    fun1();
 		}
-	});
+	    });
 	JMenuItem secondItem = new JMenuItem("Rotate 90 left");
 	secondItem.addActionListener(new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent evt){
-		   turn90left();
+		    turn90left();
 		}
-	});
+	    });
 	JMenuItem thirdItem = new JMenuItem("Grey Scale");
 	thirdItem.addActionListener(new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent evt){
-		   greyScale();
+		    greyScale();
 		}
-	});
+	    });
 	fun.add(firstItem);
 	fun.add(secondItem);
 	fun.add(thirdItem);
@@ -208,6 +208,7 @@ class IMP implements MouseListener{
 	mp.add(label2);
 
 	mp.revalidate();
+	mp.repaint();
 
     }
     /*
@@ -231,10 +232,10 @@ class IMP implements MouseListener{
         return rgba;
     }
 
-    public void getValue(){
-	int pix = picture[colorY][colorX];
-      int temp[] = getPixelArray(pix);
-      System.out.println("Color value " + temp[0] + " " + temp[1] + " "+ temp[2] + " " + temp[3]);
+    public void getValue(int x, int y){
+	int pix = picture[x][y];
+	int temp[] = getPixelArray(pix);
+	System.out.println("Color value " + temp[0] + " " + temp[1] + " "+ temp[2] + " " + temp[3]);
     }
 
     /**************************************************************************************************
@@ -283,6 +284,7 @@ class IMP implements MouseListener{
     private void turn90left(){
 	System.out.println("The height is: "+height);
 	System.out.println("The width is: "+width);
+	
 	int newArray[][] = new int[width][height];
 	for( int i=0; i<height; i++){
 	    // System.out.println("This is i: " + i);
@@ -290,6 +292,9 @@ class IMP implements MouseListener{
 		newArray[width-j][i] = picture[i][j];
 	    }
 	}
+	int temp = width;
+	width = height;
+	height = temp;
 	picture = newArray;
 	resetPicture();
     }
@@ -329,7 +334,7 @@ class IMP implements MouseListener{
         colorX = m.getX();
         colorY = m.getY();
         System.out.println(colorX + "  " + colorY);
-        getValue();
+        getValue(colorX, colorY);
         start.setEnabled(true);
     }
     @Override
