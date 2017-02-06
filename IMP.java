@@ -6,9 +6,9 @@
 /*
   |x|1. Fix the reset function in the pulldown menu
   |x| 2. Rotate image 90 degrees, odd shaped images should work
-  |_| 3. Show a histogram of the colors in a separate window
-  |_|       3.5. Use the CDF to normalize the distribution evenly
-  |_|       (note) https://en.wikipedia.org/wiki/Histogram_equalization
+  |X| 3. Show a histogram of the colors in a separate window
+  |X|       3.5. Use the CDF to normalize the distribution evenly
+  |X|       (note) https://en.wikipedia.org/wiki/Histogram_equalization
   |x| 4. Turn a color image into a grayscale and display it. 0.21 R + 0.72 G + 0.07 B
   |_| 5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
   |_| 6. Track a colored object.....orange is easiest. Results is a binary image that is black except where the colored object is located.
@@ -20,6 +20,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
+import java.util.Arrays;
 
 class IMP implements MouseListener{
     JFrame frame;
@@ -40,12 +41,11 @@ class IMP implements MouseListener{
 
     //your 2D array of pixels
     int picture[][];
-
-
+    
     Histogram redH, blueH, greenH;
     int maxValue;
     int EDM = 2;
-    int thresh = 127;
+    int thresh = 15;
 
     /*
      * In the Constructor I set up the GUI, the frame the menus. The open pulldown
@@ -305,15 +305,19 @@ class IMP implements MouseListener{
 	greyScale();
 	int avg = 0, temp = 0;
 	int rgbArray[] = new int[4];
+	int tempicture[][] = new int[height][width];
+	for(int i=0; i<height; i++){
+	    tempicture[i] = Arrays.copyOf(picture[i], width);
+	}
 	for(int i=0; i<height; i++){
 	    for(int j=0; j<width; j++){
-		rgbArray = getPixelArray(picture[i][j]);
-		avg = getSurroundingAvg(i,j);
+		rgbArray = getPixelArray(tempicture[i][j]);
+		avg = getSurroundingAvg(tempicture,i,j);
 		temp = Math.abs(rgbArray[1]-avg);
-		if(temp > thresh)
-		    temp = 255;
-		else
-		    temp = 0;
+		// if(temp > thresh)
+		//     temp = 255;
+		// else
+		//     temp = 0;
 		rgbArray[1] = temp;
 		rgbArray[2] = temp;
 		rgbArray[3] = temp;
@@ -323,7 +327,7 @@ class IMP implements MouseListener{
 	resetPicture();
     }
 
-    private int getSurroundingAvg(int si, int sj){
+    private int getSurroundingAvg(int[][] picture, int si, int sj){
 	int totSurr = 0;
 	int counter = 0;
 	int rgbArray[] = new int[4];
@@ -336,7 +340,6 @@ class IMP implements MouseListener{
 		}
 	    }
 	}
-	//System.out.println("Counter: "+counter);
 	return totSurr/counter;
 
     }
