@@ -6,11 +6,11 @@
 /*
   |x|1. Fix the reset function in the pulldown menu
   |x| 2. Rotate image 90 degrees, odd shaped images should work
-  |X| 3. Show a histogram of the colors in a separate window
-  |X|       3.5. Use the CDF to normalize the distribution evenly
-  |X|       (note) https://en.wikipedia.org/wiki/Histogram_equalization
+  |_| 3. Show a histogram of the colors in a separate window
+  |_|       3.5. Use the CDF to normalize the distribution evenly
+  |_|       (note) https://en.wikipedia.org/wiki/Histogram_equalization
   |x| 4. Turn a color image into a grayscale and display it. 0.21 R + 0.72 G + 0.07 B
-  |X| 5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
+  |_| 5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
   |_| 6. Track a colored object.....orange is easiest. Results is a binary image that is black except where the colored object is located.
 */
 
@@ -20,7 +20,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.awt.image.PixelGrabber;
 import java.awt.image.MemoryImageSource;
-import java.util.Arrays;
 
 class IMP implements MouseListener{
     JFrame frame;
@@ -41,7 +40,8 @@ class IMP implements MouseListener{
 
     //your 2D array of pixels
     int picture[][];
-    
+
+
     Histogram redH, blueH, greenH;
     int maxValue;
     int EDM = 2;
@@ -93,6 +93,7 @@ class IMP implements MouseListener{
 	start.addActionListener(new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent evt){
+		    
 		}
 	    });
 	butPanel.add(start);
@@ -244,7 +245,7 @@ class IMP implements MouseListener{
 	JLabel label2 = new JLabel(new ImageIcon(img2));
 	mp.removeAll();
 	mp.add(label2);
-
+	label2.addMouseListener(this);
 	mp.revalidate();
 	mp.repaint();
 
@@ -270,10 +271,11 @@ class IMP implements MouseListener{
 	return rgba;
     }
 
-    public void getValue(int x, int y){
-	int pix = picture[x][y];
+    public int[] getValue(int x, int y){
+	int pix = picture[y][x];
 	int temp[] = getPixelArray(pix);
 	System.out.println("Color value " + temp[0] + " " + temp[1] + " "+ temp[2] + " " + temp[3]);
+	return temp;
     }
 
     /**************************************************************************************************
@@ -304,15 +306,11 @@ class IMP implements MouseListener{
 	greyScale();
 	int avg = 0, temp = 0;
 	int rgbArray[] = new int[4];
-	int tempicture[][] = new int[height][width];
-	for(int i=0; i<height; i++){
-	    tempicture[i] = Arrays.copyOf(picture[i], width);
-	}
 	for(int i=0; i<height; i++){
 	    for(int j=0; j<width; j++){
-		rgbArray = getPixelArray(tempicture[i][j]);
-		avg = getSurroundingAvg(tempicture,i,j);
-		temp = Math.min(255, 30*Math.abs(rgbArray[1]-avg));
+		rgbArray = getPixelArray(picture[i][j]);
+		avg = getSurroundingAvg(i,j);
+		temp = Math.abs(rgbArray[1]-avg);
 		if(temp > thresh)
 		    temp = 255;
 		else
@@ -326,7 +324,7 @@ class IMP implements MouseListener{
 	resetPicture();
     }
 
-    private int getSurroundingAvg(int[][] picture, int si, int sj){
+    private int getSurroundingAvg(int si, int sj){
 	int totSurr = 0;
 	int counter = 0;
 	int rgbArray[] = new int[4];
@@ -339,6 +337,7 @@ class IMP implements MouseListener{
 		}
 	    }
 	}
+	//System.out.println("Counter: "+counter);
 	return totSurr/counter;
 
     }
@@ -417,6 +416,38 @@ class IMP implements MouseListener{
 	resetPicture();
     }
 
+    public void basicObjTracking(int[] color){
+	//	equalize();
+	int[] rgbA = {0,0,0,0};
+	for(int i=0; i<height; i++){
+	    for(int j=0; j<width; j++){
+		rgbA = getPixelArray(picture[i][j]);
+		boolean matching = true;
+
+		for(int k=1; k<=3; k++){
+		    if(Math.abs(rgbA[k]-color[k]) > 13){
+			matching = false;
+		    }
+		}
+
+		
+		if(matching){
+		    rgbA[1] = 255;
+		    rgbA[2] = 255;
+		    rgbA[3] = 255;
+		}else{
+		    rgbA[1] = 0;
+		    rgbA[2] = 0;
+		    rgbA[3] = 0;
+		}
+		//System.out.println(picture[i][j]);
+		picture[i][j] = getPixels(rgbA);
+	    }
+	}
+	resetPicture();
+	//mp.repaint();
+    }
+
     public void makeHistograms(){
 	if(redH != null){
 	    redH.dispatchEvent(new WindowEvent(redH, WindowEvent.WINDOW_CLOSING));
@@ -465,17 +496,21 @@ class IMP implements MouseListener{
     public void mouseExited(MouseEvent m){}
     @Override
     public void mouseClicked(MouseEvent m){
+	//equalize();
 	colorX = m.getX();
 	colorY = m.getY();
 	System.out.println(colorX + "  " + colorY);
-	getValue(colorX, colorY);
-	start.setEnabled(true);
+	int[] color = getValue(colorX, colorY);
+	//start.setEnabled(true);
+
+	basicObjTracking(color);
+	System.out.println("Finished obj detect");
     }
     @Override
     public void mousePressed(MouseEvent m){}
     @Override
     public void mouseReleased(MouseEvent m){
-	//Histogram h = new Histogram("CLICK", pixels);
+	
     }
 
     public static void main(String [] args){
