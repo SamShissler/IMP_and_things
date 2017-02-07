@@ -10,7 +10,7 @@
   |X|       3.5. Use the CDF to normalize the distribution evenly
   |X|       (note) https://en.wikipedia.org/wiki/Histogram_equalization
   |x| 4. Turn a color image into a grayscale and display it. 0.21 R + 0.72 G + 0.07 B
-  |_| 5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
+  |X| 5. Turn a color image into a grayscale image and then do a 3x3 mask to do an edge detection
   |_| 6. Track a colored object.....orange is easiest. Results is a binary image that is black except where the colored object is located.
 */
 
@@ -45,7 +45,7 @@ class IMP implements MouseListener{
     Histogram redH, blueH, greenH;
     int maxValue;
     int EDM = 2;
-    int thresh = 15;
+    int thresh = 127;
 
     /*
      * In the Constructor I set up the GUI, the frame the menus. The open pulldown
@@ -93,7 +93,6 @@ class IMP implements MouseListener{
 	start.addActionListener(new ActionListener(){
 		@Override
 		public void actionPerformed(ActionEvent evt){
-		    
 		}
 	    });
 	butPanel.add(start);
@@ -313,11 +312,11 @@ class IMP implements MouseListener{
 	    for(int j=0; j<width; j++){
 		rgbArray = getPixelArray(tempicture[i][j]);
 		avg = getSurroundingAvg(tempicture,i,j);
-		temp = Math.abs(rgbArray[1]-avg);
-		// if(temp > thresh)
-		//     temp = 255;
-		// else
-		//     temp = 0;
+		temp = Math.min(255, 30*Math.abs(rgbArray[1]-avg));
+		if(temp > thresh)
+		    temp = 255;
+		else
+		    temp = 0;
 		rgbArray[1] = temp;
 		rgbArray[2] = temp;
 		rgbArray[3] = temp;
@@ -476,7 +475,7 @@ class IMP implements MouseListener{
     public void mousePressed(MouseEvent m){}
     @Override
     public void mouseReleased(MouseEvent m){
-	Histogram h = new Histogram("CLICK", pixels);
+	//Histogram h = new Histogram("CLICK", pixels);
     }
 
     public static void main(String [] args){
